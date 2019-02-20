@@ -1,0 +1,14 @@
+name,r,g,b
+None,0,0,0
+Buildings,1,0,0
+Fences,2,0,0
+Other,3,0,0
+Pedestrian,4,0,0
+Poles,5,0,0
+Roadlines,6,0,0
+Roads,7,0,0
+Sidewalks,8,0,0
+Vegetation,9,0,0
+Vehicles,10,0,0
+Walls,11,0,0
+TrafficSigns,12,0,0
