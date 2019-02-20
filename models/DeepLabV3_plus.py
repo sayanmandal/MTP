@@ -61,16 +61,18 @@ def AtrousSpatialPyramidPoolingModule(inputs, depth=256):
 
 def build_deeplabv3_plus(inputs, num_classes, preset_model='DeepLabV3+', frontend="ResNet101", weight_decay=1e-5, is_training=True, pretrained_dir="models"):
     """
-    Builds the DeepLabV3 model. 
+    Builds the DeepLabV3 model.
 
     Arguments:
-      inputs: The input tensor= 
-      preset_model: Which model you want to use. Select which ResNet model to use for feature extraction 
+      inputs: The input tensor=
+      preset_model: Which model you want to use. Select which ResNet model to use for feature extraction
       num_classes: Number of classes
 
     Returns:
       DeepLabV3 model
     """
+
+    ret = []
 
     logits, end_points, frontend_scope, init_fn  = frontend_builder.build_frontend(inputs, frontend, is_training=is_training)
 
@@ -82,6 +84,7 @@ def build_deeplabv3_plus(inputs, num_classes, preset_model='DeepLabV3+', fronten
     net = AtrousSpatialPyramidPoolingModule(end_points['pool4'])
     net = slim.conv2d(net, 256, [1, 1], scope="conv_1x1_output", activation_fn=None)
     decoder_features = Upsampling(net, label_size / 4)
+    ret.append(decoder_features)
 
     encoder_features = slim.conv2d(encoder_features, 48, [1, 1], activation_fn=tf.nn.relu, normalizer_fn=None)
 
@@ -90,11 +93,13 @@ def build_deeplabv3_plus(inputs, num_classes, preset_model='DeepLabV3+', fronten
     net = slim.conv2d(net, 256, [3, 3], activation_fn=tf.nn.relu, normalizer_fn=None)
     net = slim.conv2d(net, 256, [3, 3], activation_fn=tf.nn.relu, normalizer_fn=None)
 
+    ret.append(net)
     net = Upsampling(net, label_size)
-    
-    net = slim.conv2d(net, num_classes, [1, 1], activation_fn=None, scope='logits')
 
-    return net, init_fn
+    net = slim.conv2d(net, num_classes, [1, 1], activation_fn=None, scope='logits')
+    ret.append(net)
+
+    return ret, init_fn
 
 
 def mean_image_subtraction(inputs, means=[123.68, 116.78, 103.94]):
